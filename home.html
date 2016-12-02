@@ -18,7 +18,6 @@
 
         #log {
             background : white;
-            margin     : 0;
             padding    : 0.5em 0.5em 0.5em 0.5em;
             position   : absolute;
             top        : 0.5em;
@@ -26,6 +25,20 @@
             right      : 0.5em;
             bottom     : 3em;
             overflow   : auto;
+            margin     : 0 0 0 11%;
+        }
+
+        #users {
+            background  : white;
+            margin      : 0;
+            padding     : 0.5em 0.5em 0.5em 0.5em;
+            position    : absolute;
+            top         : 0.5em;
+            left        : 0.5em;
+            right       : 0.5em;
+            bottom      : 3em;
+            overflow    : auto;
+            width       : 10%;
         }
 
         #form {
@@ -41,6 +54,7 @@
     </style>
 </head>
 <body>
+<div id="users"></div>
 <div id="log"></div>
 
 <form id="form" enctype="multipart/form-data">
@@ -71,6 +85,20 @@
         var log = document.getElementById("log");
         var file = document.getElementById("fileupload");
         var filename = "";
+
+        var hook = true;
+        window.onbeforeunload = function() {
+            if (hook) {
+                conn.send(JSON.stringify({"removeUser": username.value}));
+                return ("You are leaving");
+            }
+        };
+        function unhook() {
+            hook = false;
+        }
+
+
+
 
         function appendLog(item) {
             var doScroll = log.scrollTop === log.scrollHeight - log.clientHeight;
@@ -108,8 +136,6 @@
             filename = "";
             return false;
         };
-
-
 
 
         if (window["WebSocket"]) {

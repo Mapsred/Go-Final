@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"fmt"
 	"encoding/json"
 	"strings"
 )
@@ -57,6 +56,12 @@ type DataContent struct {
 	File     string
 }
 
+type RemoveUser struct {
+	removeUser string
+}
+
+var Users []string = make([]string, 0)
+
 // readPump pumps messages from the websocket connection to the hub.
 //
 // The application runs readPump in a per-connection goroutine. The application
@@ -100,11 +105,20 @@ func (c *Client) writePump() {
 		select {
 		case message, ok := <-c.send:
 			var data DataContent
-			fmt.Println(string(message))
+			log.Println(string(message))
 			err := json.Unmarshal(message, &data)
 			if err != nil {
-				fmt.Println(err)
+				log.Printf("Unmarshal: %v", err)
 			}
+
+			var removal RemoveUser
+			log.Println(string(message))
+			err2 := json.Unmarshal(message, &removal)
+			if err2 != nil {
+				log.Printf("Unmarshal 2: %v", err2)
+			}
+			//log.Printf("Message: %v", removal)
+			log.Println(removal)
 
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
@@ -151,6 +165,9 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 }
 
 func buildMessage(content DataContent) string {
+	if !stringInSlice(content.Username, Users) {
+		Users = append(Users, content.Username)
+	}
 	var message = content.Username + " : " + content.Message
 	str := strings.Replace(content.File, "C:\\fakepath\\", "", -1)
 	if str != "" {
@@ -158,4 +175,13 @@ func buildMessage(content DataContent) string {
 	}
 
 	return message
+}
+
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
