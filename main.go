@@ -11,8 +11,6 @@ import (
 	"text/template"
 	"os"
 	"io"
-	"runtime"
-	"path"
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
@@ -75,10 +73,4 @@ func main() {
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
-}
-
-func getCurrentDir() string {
-	_, filename, _, _ := runtime.Caller(1)
-
-	return path.Dir(filename)
 }
