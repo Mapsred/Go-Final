@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"time"
-
 	"github.com/gorilla/websocket"
 	"encoding/json"
 	"strings"
@@ -54,10 +53,6 @@ type DataContent struct {
 	Username string
 	Message  string
 	File     string
-}
-
-type RemoveUser struct {
-	removeUser string
 }
 
 var Users []string = make([]string, 0)
@@ -111,15 +106,6 @@ func (c *Client) writePump() {
 				log.Printf("Unmarshal: %v", err)
 			}
 
-			var removal RemoveUser
-			log.Println(string(message))
-			err2 := json.Unmarshal(message, &removal)
-			if err2 != nil {
-				log.Printf("Unmarshal 2: %v", err2)
-			}
-			//log.Printf("Message: %v", removal)
-			log.Println(removal)
-
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
@@ -131,7 +117,12 @@ func (c *Client) writePump() {
 			if err != nil {
 				return
 			}
-			w.Write([]byte(buildMessage(data)))
+			if data.Message != "null" {
+				w.Write([]byte(buildMessage(data)))
+				w.Write(sendUsers(data, false))
+			} else {
+				w.Write(sendUsers(data, true))
+			}
 
 		// Add queued chat messages to the current websocket message.
 			n := len(c.send)
@@ -171,7 +162,7 @@ func buildMessage(content DataContent) string {
 	var message = content.Username + " : " + content.Message
 	str := strings.Replace(content.File, "C:\\fakepath\\", "", -1)
 	if str != "" {
-		message += " <a href='http://localhost/golang/"+str+"'>" + str + "</a>"
+		message += " <a href='http://localhost/golang/" + str + "'>" + str + "</a>"
 	}
 
 	return message
@@ -184,4 +175,23 @@ func stringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
+}
+
+func removeInSlice(a string, list []string) []string {
+	var final []string = make([]string, 0)
+	for _, item := range list {
+		if a != item {
+			final = append(final, item)
+		}
+	}
+	return final
+}
+
+func sendUsers(data DataContent, deleting bool) []byte {
+	if (deleting) {
+		Users = removeInSlice(data.Username, Users)
+	}
+	users, _ := json.Marshal(append([]string{"USER LIST"}, Users...))
+
+	return users
 }

@@ -29,16 +29,16 @@
         }
 
         #users {
-            background  : white;
-            margin      : 0;
-            padding     : 0.5em 0.5em 0.5em 0.5em;
-            position    : absolute;
-            top         : 0.5em;
-            left        : 0.5em;
-            right       : 0.5em;
-            bottom      : 3em;
-            overflow    : auto;
-            width       : 10%;
+            background : white;
+            margin     : 0;
+            padding    : 0.5em 0.5em 0.5em 0.5em;
+            position   : absolute;
+            top        : 0.5em;
+            left       : 0.5em;
+            right      : 0.5em;
+            bottom     : 3em;
+            overflow   : auto;
+            width      : 10%;
         }
 
         #form {
@@ -86,19 +86,9 @@
         var file = document.getElementById("fileupload");
         var filename = "";
 
-        var hook = true;
-        window.onbeforeunload = function() {
-            if (hook) {
-                conn.send(JSON.stringify({"removeUser": username.value}));
-                return ("You are leaving");
-            }
+        window.onbeforeunload = function () {
+            conn.send(JSON.stringify({"username": username.value, "message": "null", file: "null"}));
         };
-        function unhook() {
-            hook = false;
-        }
-
-
-
 
         function appendLog(item) {
             var doScroll = log.scrollTop === log.scrollHeight - log.clientHeight;
@@ -113,7 +103,6 @@
         });
 
         $('#fileupload').fileupload({url: "./ajax", dataType: 'json'});
-
 
         document.getElementById("form").onsubmit = function () {
             if (!conn) {
@@ -137,7 +126,6 @@
             return false;
         };
 
-
         if (window["WebSocket"]) {
             conn = new WebSocket("ws://{{$}}/ws");
             conn.onclose = function (evt) {
@@ -146,11 +134,26 @@
                 appendLog(item);
             };
             conn.onmessage = function (evt) {
-                var messages = evt.data.split('\n');
-                for (var i = 0; i < messages.length; i++) {
-                    var item = document.createElement("div");
-                    item.innerHTML = messages[i];
-                    appendLog(item);
+                var data = evt.data.split("[");
+                var users = data.length >= 2 ? data[1].split(",") : evt.data.split(",");
+                var userList = "";
+                $.each(users, function (key, value) {
+                    users[key] = value.replace("[", "").replace("]", "").replace(/["']/g, "")
+                    if (key != 0) {
+                        userList += "<div>" + users[key] + "</div>"
+                    }
+                });
+
+                if (users != null && users[0] == "USER LIST") {
+                    $("#users").html(userList);
+                }
+                if (data.length >= 2) {
+                    var messages = data[0].split('\n');
+                    for (var i = 0; i < messages.length; i++) {
+                        var item = document.createElement("div");
+                        item.innerHTML = messages[i];
+                        appendLog(item);
+                    }
                 }
             };
         } else {
