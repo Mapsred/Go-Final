@@ -18,7 +18,7 @@ import (
 var addr = flag.String("addr", ":8080", "http service address")
 var homeTemplate = template.Must(template.ParseFiles("home.html"))
 
-const UPLOAD_PATH = "/home/maps_red/Téléchargements/"
+const UPLOAD_PATH = "/var/www/html/golang/"
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.Method)

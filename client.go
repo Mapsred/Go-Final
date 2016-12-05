@@ -162,7 +162,7 @@ func buildMessage(content DataContent) string {
 	var message = content.Username + " : " + content.Message
 	str := strings.Replace(content.File, "C:\\fakepath\\", "", -1)
 	if str != "" {
-		message += " <a href='http://localhost/golang/" + str + "'>" + str + "</a>"
+		message += " <a target='about:blank' href='http://localhost/golang/" + str + "'>" + str + "</a>"
 	}
 
 	return message
