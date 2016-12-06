@@ -1,7 +1,3 @@
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
@@ -49,19 +45,17 @@ type Client struct {
 	send chan []byte
 }
 
+// DataContent is the JSON who comes from the JavaScript websocket action
 type DataContent struct {
 	Username string
 	Message  string
 	File     string
 }
 
+// Slice containing current users
 var Users []string = make([]string, 0)
 
 // readPump pumps messages from the websocket connection to the hub.
-//
-// The application runs readPump in a per-connection goroutine. The application
-// ensures that there is at most one reader on a connection by executing all
-// reads from this goroutine.
 func (c *Client) readPump() {
 	defer func() {
 		c.hub.unregister <- c
@@ -86,10 +80,6 @@ func (c *Client) readPump() {
 }
 
 // writePump pumps messages from the hub to the websocket connection.
-//
-// A goroutine running writePump is started for each connection. The
-// application ensures that there is at most one writer to a connection by
-// executing all writes from this goroutine.
 func (c *Client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
@@ -100,7 +90,6 @@ func (c *Client) writePump() {
 		select {
 		case message, ok := <-c.send:
 			var data DataContent
-			log.Println(string(message))
 			err := json.Unmarshal(message, &data)
 			if err != nil {
 				log.Printf("Unmarshal: %v", err)
@@ -155,6 +144,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	client.readPump()
 }
 
+//Build the html message
 func buildMessage(content DataContent) string {
 	if !stringInSlice(content.Username, Users) {
 		Users = append(Users, content.Username)
@@ -167,7 +157,7 @@ func buildMessage(content DataContent) string {
 
 	return message
 }
-
+//Helper method to check if a given string exists in a given slice
 func stringInSlice(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
@@ -177,6 +167,7 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
+//Helper method to remove a given string exists from a given slice
 func removeInSlice(a string, list []string) []string {
 	var final []string = make([]string, 0)
 	for _, item := range list {
@@ -187,6 +178,7 @@ func removeInSlice(a string, list []string) []string {
 	return final
 }
 
+//Send current user list
 func sendUsers(data DataContent, deleting bool) []byte {
 	if (deleting) {
 		Users = removeInSlice(data.Username, Users)

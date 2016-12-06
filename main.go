@@ -1,7 +1,3 @@
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
@@ -18,9 +14,8 @@ var homeTemplate = template.Must(template.ParseFiles("home.html"))
 
 const UPLOAD_PATH = "/var/www/html/golang/"
 
+// Router, render html file and manage routes
 func serveHome(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.Method)
-
 	if r.URL.Path == "/" && r.Method == "GET" {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		homeTemplate.Execute(w, r.Host)
@@ -34,6 +29,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Handle the file upload from the ajax
 func uploader(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(100000)
 	if err != nil {
