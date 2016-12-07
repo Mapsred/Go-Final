@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Chat Example</title>
+    <title>Golang IRC</title>
     <style type="text/css">
         html {
             overflow : hidden;
@@ -59,8 +59,8 @@
 
 <form id="form" enctype="multipart/form-data">
     <input type="submit" value="Send"/>
-    <input type="text" id="username" size="30" placeholder="Pseudo" required value="Maps_red"/>
-    <input type="text" id="msg" size="64" value="Hello World !"/>
+    <input type="text" id="username" size="30" placeholder="Pseudo" value="Maps_red" required/>
+    <input type="text" id="msg" size="64" value="Hello World !" placeholder="Message"/>
     <span class="btn btn-success fileinput-button">
         <input type="file" id="fileupload" name="file">
     </span>
@@ -80,14 +80,15 @@
 <script type="text/javascript">
     window.onload = function () {
         var conn;
-        var msg = document.getElementById("msg");
-        var username = document.getElementById("username");
         var log = document.getElementById("log");
-        var file = document.getElementById("fileupload");
+        var username = "";
         var filename = "";
-
+        
+        //Send the username of the closing client if his username is defined
         window.onbeforeunload = function () {
-            conn.send(JSON.stringify({"username": username.value, "message": "null", file: "null"}));
+            if (username.length != 0) {
+                conn.send(JSON.stringify({"username": username, "message": "null", file: "null"}));
+            }
         };
 
         function appendLog(item) {
@@ -100,31 +101,30 @@
 
         $("#fileupload").change(function () {
             filename = $(this).val();
-        });
+            $(this).prop("disabled", true);
+        })
+            .fileupload({url: "./ajax", dataType: 'json'});
 
-        $('#fileupload').fileupload({url: "./ajax", dataType: 'json'});
-
-        document.getElementById("form").onsubmit = function () {
-            if (!conn) {
+        $("#form").on("submit", function (e) {
+            e.preventDefault();
+            var msg = $("#msg");
+            if (!conn || !msg.val()) {
                 return false;
             }
-            if (!msg.value) {
-                return false;
-            }
-
+            username = $("#username").val();
             var message = {
-                username: username.value,
-                message: msg.value,
+                username: username,
+                message: msg.val(),
                 file: filename
             };
 
             conn.send(JSON.stringify(message));
 
-//            msg.value = "";
-            file.value = "";
+            $("#fileupload").prop("disabled", false);
             filename = "";
+
             return false;
-        };
+        });
 
         if (window["WebSocket"]) {
             conn = new WebSocket("ws://{{$}}/ws");

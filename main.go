@@ -20,9 +20,9 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		homeTemplate.Execute(w, r.Host)
 	} else if r.URL.Path == "/ajax" && r.Method == "POST" {
+		uploader(w, r)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		homeTemplate.Execute(w, r.Host)
-		uploader(w, r)
 	} else {
 		http.Error(w, "Not found", 404)
 		return
@@ -33,6 +33,8 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 func uploader(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(100000)
 	if err != nil {
+		log.Println("error")
+		log.Printf("%v", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -58,6 +60,8 @@ func uploader(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	log.Println("Server started")
+
 	flag.Parse()
 	hub := newHub()
 	go hub.run()
