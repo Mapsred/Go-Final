@@ -50,6 +50,7 @@ type DataContent struct {
 	Username string
 	Message  string
 	File     string
+	Color	 string
 }
 
 // Slice containing current users
@@ -149,7 +150,7 @@ func buildMessage(content DataContent) string {
 	if !stringInSlice(content.Username, Users) {
 		Users = append(Users, content.Username)
 	}
-	var message = content.Username + " : " + content.Message
+	var message = content.Username + " : " + content.Message+ "|||"+content.Color
 	str := strings.Replace(content.File, "C:\\fakepath\\", "", -1)
 	if str != "" {
 		message += " <a target='about:blank' href='http://localhost/golang/" + str + "'>" + str + "</a>"

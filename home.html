@@ -60,7 +60,13 @@
 <form id="form" enctype="multipart/form-data">
     <input type="submit" value="Send"/>
     <input type="text" id="username" size="30" placeholder="Pseudo" value="Maps_red" required/>
-    <input type="text" id="msg" size="64" value="Hello World !" placeholder="Message"/>
+    <input type="text" id="msg" size="64" value="Salut --> Saromase" placeholder="Message"/>
+    <select name="color" id="color">
+        <option value="red">Rouge</option>
+        <option value="green">Vert</option>
+        <option value="blue">Bleu</option>
+        <option value="black" selected>Noir</option>
+    </select>
     <span class="btn btn-success fileinput-button">
         <input type="file" id="fileupload" name="file">
     </span>
@@ -83,11 +89,11 @@
         var log = document.getElementById("log");
         var username = "";
         var filename = "";
-        
+
         //Send the username of the closing client if his username is defined
         window.onbeforeunload = function () {
             if (username.length != 0) {
-                conn.send(JSON.stringify({"username": username, "message": "null", file: "null"}));
+                conn.send(JSON.stringify({"username": username, "message": "null", file: "null", color: "null"}));
             }
         };
 
@@ -102,8 +108,7 @@
         $("#fileupload").change(function () {
             filename = $(this).val();
             $(this).prop("disabled", true);
-        })
-            .fileupload({url: "./ajax", dataType: 'json'});
+        }).fileupload({url: "./ajax", dataType: 'json'});
 
         $("#form").on("submit", function (e) {
             e.preventDefault();
@@ -115,7 +120,8 @@
             var message = {
                 username: username,
                 message: msg.val(),
-                file: filename
+                file: filename,
+                color: $("#color").val()
             };
 
             conn.send(JSON.stringify(message));
@@ -151,7 +157,19 @@
                     var messages = data[0].split('\n');
                     for (var i = 0; i < messages.length; i++) {
                         var item = document.createElement("div");
-                        item.innerHTML = messages[i];
+                        messages[i] = messages[i].split("|||");
+                        var pm = messages[i][0].split("-->");
+                        if (pm.length != 0) {
+                            item.style.cssText = "color:" + messages[i][1];
+                            var sender = pm[0].split(":")[0];
+                            if (pm[1].trim() == username) {
+                                item.innerHTML = "<i>" + pm[0] + "</i>";
+                            }else if (sender.trim() == username) {
+                                item.innerHTML = "<i>" + messages[i][0] + "</i>";
+                            }
+                        } else {
+                            item.innerHTML = messages[i][0];
+                        }
                         appendLog(item);
                     }
                 }
