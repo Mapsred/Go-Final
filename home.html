@@ -17,7 +17,7 @@
         }
 
         #log {
-            background : white;
+            background : #2D2D2D;
             padding    : 0.5em 0.5em 0.5em 0.5em;
             position   : absolute;
             top        : 0.5em;
@@ -26,10 +26,11 @@
             bottom     : 3em;
             overflow   : auto;
             margin     : 0 0 0 11%;
+            color      : #FFFFFF;
         }
 
         #users {
-            background : white;
+            background : #2D2D2D;
             margin     : 0;
             padding    : 0.5em 0.5em 0.5em 0.5em;
             position   : absolute;
@@ -39,6 +40,7 @@
             bottom     : 3em;
             overflow   : auto;
             width      : 10%;
+            color      : #FFFFFF;
         }
 
         #form {
@@ -55,17 +57,19 @@
 </head>
 <body>
 <div id="users"></div>
-<div id="log"></div>
+<div id="log">
+    <div style="color: #FFFFFF;">Welcome to the Golang IRC !</div>
+</div>
 
 <form id="form" enctype="multipart/form-data">
-    <input type="submit" value="Send"/>
+    <input type="submit" value="Envoyer"/>
     <input type="text" id="username" size="30" placeholder="Pseudo" value="Maps_red" required/>
     <input type="text" id="msg" size="64" value="Salut --> Saromase" placeholder="Message"/>
     <select name="color" id="color">
         <option value="red">Rouge</option>
         <option value="green">Vert</option>
         <option value="blue">Bleu</option>
-        <option value="black" selected>Noir</option>
+        <option value="white" selected>Blanc</option>
     </select>
     <span class="btn btn-success fileinput-button">
         <input type="file" id="fileupload" name="file">
@@ -159,16 +163,17 @@
                         var item = document.createElement("div");
                         messages[i] = messages[i].split("|||");
                         var pm = messages[i][0].split("-->");
-                        if (pm.length != 0) {
+                        if (pm.length > 1) {
                             item.style.cssText = "color:" + messages[i][1];
                             var sender = pm[0].split(":")[0];
-                            if (pm[1].trim() == username) {
-                                item.innerHTML = "<i>" + pm[0] + "</i>";
-                            }else if (sender.trim() == username) {
-                                item.innerHTML = "<i>" + messages[i][0] + "</i>";
+                            if (pm[1] != null && pm[1].trim() == username) {
+                                item.innerHTML = "<i>" + showTime() + " - " + pm[0] + "</i>";
+                            } else if (sender.trim() == username) {
+                                item.innerHTML = "<i>" + showTime() + " - " + messages[i][0] + "</i>";
                             }
                         } else {
-                            item.innerHTML = messages[i][0];
+                            item.style.cssText = "color:" + messages[i][1];
+                            item.innerHTML = showTime() + " - " + messages[i][0];
                         }
                         appendLog(item);
                     }
@@ -178,6 +183,18 @@
             var item = document.createElement("div");
             item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
             appendLog(item);
+        }
+
+        function showTime() {
+            var timeNow = new Date();
+            var hours = timeNow.getHours();
+            var minutes = timeNow.getMinutes();
+            var seconds = timeNow.getSeconds();
+            var timeString = ((hours < 10) ? ":0" : "") + hours;
+            timeString += ((minutes < 10) ? ":0" : ":") + minutes;
+            timeString += ((seconds < 10) ? ":0" : ":") + seconds;
+
+            return timeString;
         }
     };
 </script>
